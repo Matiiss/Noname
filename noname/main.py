@@ -30,7 +30,7 @@ class Game:
             Position(pygame.Vector2(self.screen.get_size()) / 2),
             Velocity(),
             Sprite(load_sprites("assets/images/player/1.png")[0]),
-            Rectangle()
+            Rectangle(),
         )
         self.world.player = self.player
 

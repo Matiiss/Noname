@@ -63,8 +63,10 @@ class CollisionProcessor(esper.Processor):
         for entity, (pos, velocity, rect, sprite) in self.world.get_components(
             Position, Velocity, Rectangle, Sprite
         ):
-            rect.center = pos + pygame.Vector2(sprite.image.get_size())/2
-            rect.width, rect.height = pygame.Vector2(sprite.original_image.get_size()) * 0.7
+            rect.center = pos + pygame.Vector2(sprite.image.get_size()) / 2
+            rect.width, rect.height = (
+                pygame.Vector2(sprite.original_image.get_size()) * 0.7
+            )
             horizontal = rect.move(velocity.x * 5, 0)
             vertical = rect.move(0, velocity.y * 5)
             # pygame.draw.rect(self.world.screen, "red", vertical, width=1)
