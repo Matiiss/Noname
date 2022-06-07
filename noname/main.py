@@ -23,7 +23,6 @@ class Game:
         self.world.screen = self.screen
         for processor in processors:
             self.world.add_processor(processor, priority=processor.priority)
-        # print(self.world._processors)
 
         self.add_tiles("assets/maps/map1.json")
         self.player = self.world.create_entity(

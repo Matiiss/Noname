@@ -69,8 +69,6 @@ class CollisionProcessor(esper.Processor):
             )
             horizontal = rect.move(velocity.x * 5, 0)
             vertical = rect.move(0, velocity.y * 5)
-            # pygame.draw.rect(self.world.screen, "red", vertical, width=1)
-            # pygame.draw.rect(self.world.screen, "red", horizontal, width=1)
             for tile_id, tile in self.world.get_component(Tile):
                 if tile.colliderect(horizontal):
                     velocity.x = 0
