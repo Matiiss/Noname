@@ -6,7 +6,7 @@ from .components import *
 class MovementProcessor(esper.Processor):
     priority = 10
 
-    def process(self, events, actual_frames):
+    def process(self, events: list, actual_frames: float) -> None:
         for entity, (pos, velocity) in self.world.get_components(Position, Velocity):
             pos += velocity * actual_frames
 
@@ -14,11 +14,11 @@ class MovementProcessor(esper.Processor):
 class RenderProcessor(esper.Processor):
     priority = 0
 
-    def process(self, events, actual_frames):
+    def process(self, events: list, actual_frames: float) -> None:
         screen = self.world.screen
         self.sprites(screen)
 
-    def sprites(self, screen):
+    def sprites(self, screen: pygame.Surface) -> None:
         for entity, (pos, sprite) in self.world.get_components(Position, Sprite):
             screen.blit(sprite.image, pos)
 
@@ -27,7 +27,7 @@ class InputProcessor(esper.Processor):
     right = pygame.Vector2(1, 0)
     priority = 15
 
-    def process(self, events, actual_frames):
+    def process(self, events: list, actual_frames: float) -> None:
         dx, dy = 0, 0
         pos, velocity, sprite = (
             self.world.component_for_entity(self.world.player, component)
@@ -59,7 +59,7 @@ class InputProcessor(esper.Processor):
 class CollisionProcessor(esper.Processor):
     priority = 13
 
-    def process(self, events, actual_frames):
+    def process(self, events: list, actual_frames: float) -> None:
         for entity, (pos, velocity, rect, sprite) in self.world.get_components(
             Position, Velocity, Rectangle, Sprite
         ):
@@ -79,7 +79,7 @@ class CollisionProcessor(esper.Processor):
 
 
 class LightingProcessor(esper.Processor):
-    def process(self, events, actual_frames):
+    def process(self, events: list, actual_frames: float) -> None:
         position = self.world.component_for_entity(self.world.player, Position)
         # hmm
 

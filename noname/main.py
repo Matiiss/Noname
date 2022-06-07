@@ -1,9 +1,9 @@
-import pygame
 import esper
+import pygame
 
+from .components import Position, Sprite, Velocity, Rectangle, Tile
 from .enums import GameState
 from .processors import processors
-from .components import *
 from .utils.assets import load_map, load_sprites
 
 
@@ -63,7 +63,7 @@ class Game:
     def __del__(self) -> None:
         pygame.quit()
 
-    def add_tiles(self, path):
+    def add_tiles(self, path: str) -> None:
         for data, position in load_map(path):
             tile = data["tile"]
             components = (Sprite(tile), Position(position))
