@@ -27,10 +27,10 @@ def load_map(
     """Returns an iterator that yields a tuple of tile data and its position."""
 
     if mapping is None:
-        tiles = load_sprites("assets/images/tiles/sheet.png")
+        tiles = load_sprites("assets/images/tiles/spritesheet.png", size=32, convert_alpha=True)
         mapping = {
-            ".": {"tile": tiles[1], "collision": False},
-            "x": {"tile": tiles[2], "collision": True},
+            ".": {"tile": tiles[0], "collision": False},
+            "x": {"tile": tiles[1], "collision": True},
         }
     with open(path, "r") as file:
         data = json.load(file)
