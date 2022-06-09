@@ -66,12 +66,12 @@ class Game:
     def load_tiles(
         path: str,
     ) -> tuple[
-        tuple[tuple[pygame.Surface, tuple[int, int]], ...],
+        tuple[tuple[pygame.Surface, pygame.Vector2], ...],
         tuple[tuple[bool, ...], ...],
     ]:
         tile_array = load_map(path=path)
         return tuple(
-            (data["tile"], (col * TILE_SIZE, row * TILE_SIZE))
+            (data["tile"], pygame.Vector2(col * TILE_SIZE, row * TILE_SIZE))
             for row, row_data in enumerate(tile_array)
             for col, data in enumerate(row_data)
         ), tuple(tuple(data["collision"] for data in row) for row in tile_array)
