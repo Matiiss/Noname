@@ -1,3 +1,5 @@
+import time
+
 import esper
 
 from .components import *
@@ -14,13 +16,21 @@ class MovementProcessor(esper.Processor):
 class RenderProcessor(esper.Processor):
     priority = 0
 
+    pygame.font.init()
+    font = pygame.font.Font(None, 16)
+
     def process(self, events: list, actual_frames: float) -> None:
         screen = self.world.screen
+        self.tiles(screen)
         self.sprites(screen)
 
     def sprites(self, screen: pygame.Surface) -> None:
         for entity, (pos, sprite) in self.world.get_components(Position, Sprite):
             screen.blit(sprite.image, pos)
+
+    def tiles(self, screen: pygame.Surface) -> None:
+        for surface, position in self.world.map:
+            screen.blit(surface, position)
 
 
 class InputProcessor(esper.Processor):
@@ -60,20 +70,43 @@ class CollisionProcessor(esper.Processor):
     priority = 13
 
     def process(self, events: list, actual_frames: float) -> None:
-        for entity, (pos, velocity, rect, sprite) in self.world.get_components(
-            Position, Velocity, Rectangle, Sprite
+        for entity, (pos, vel, rect, sprite) in self.world.get_components(
+            Position, Velocity, FRect, Sprite
         ):
-            rect.center = pos + pygame.Vector2(sprite.image.get_size()) / 2
-            rect.width, rect.height = (
-                pygame.Vector2(sprite.original_image.get_size()) * 0.7
-            )
-            horizontal = rect.move(velocity.x * 5, 0)
-            vertical = rect.move(0, velocity.y * 5)
-            for tile_id, tile in self.world.get_component(Tile):
-                if tile.colliderect(horizontal):
-                    velocity.x = 0
-                if tile.colliderect(vertical):
-                    velocity.y = 0
+            center_pos = Position(pos + pygame.Vector2(sprite.image.get_size()) / 2)
+            new_pos = Position(center_pos + vel)
+            cx, cy = new_pos.cx, new_pos.cy
+
+            rect.center = center_pos
+            horizontal_projection = rect.move(vel.x, 0)
+            vertical_projection = rect.move(0, vel.y)
+
+            start = time.perf_counter()
+            tiles = [
+                pygame.Rect(cx * TILE_SIZE, cy * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                for cx, cy in (
+                    (cx - 1, cy - 1),
+                    (cx, cy - 1),
+                    (cx + 1, cy - 1),
+                    (cx + 1, cy),
+                    (cx + 1, cy + 1),
+                    (cx, cy + 1),
+                    (cx - 1, cy + 1),
+                    (cx - 1, cy),
+                )
+                if self.collides(cx, cy)
+            ]
+            for tile in tiles:
+                if horizontal_projection.colliderect(tile):
+                    vel.x = 0
+                if vertical_projection.colliderect(tile):
+                    vel.y = 0
+
+    def collides(self, cx: int, cy: int) -> bool:
+        try:
+            return self.world.collision_map[cy][cx]
+        except IndexError:
+            return True
 
 
 class LightingProcessor(esper.Processor):
