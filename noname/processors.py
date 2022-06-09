@@ -17,18 +17,32 @@ class RenderProcessor(esper.Processor):
     pygame.font.init()
     font = pygame.font.Font(None, 16)
 
+    camera = pygame.Vector2(0, 0)
+
     def process(self, events: list, actual_frames: float) -> None:
         screen = self.world.screen
-        self.tiles(screen)
-        self.sprites(screen)
+        pos, sprite = [
+            self.world.component_for_entity(self.world.player, component)
+            for component in (Position, Sprite)
+        ]
+        self.get_offset(pos + pygame.Vector2(sprite.image.get_size()) / 2)
+        self.tiles(screen, self.camera)
+        self.sprites(screen, self.camera)
 
-    def sprites(self, screen: pygame.Surface) -> None:
+    def sprites(self, screen: pygame.Surface, offset: pygame.Vector2) -> None:
         for entity, (pos, sprite) in self.world.get_components(Position, Sprite):
-            screen.blit(sprite.image, pos)
+            final = pygame.Vector2(int(pos.x - offset.x), int(pos.y - offset.y))
+            screen.blit(sprite.image, final)
 
-    def tiles(self, screen: pygame.Surface) -> None:
+    def tiles(self, screen: pygame.Surface, offset: pygame.Vector2) -> None:
         for surface, position in self.world.map:
-            screen.blit(surface, position)
+            final = pygame.Vector2(
+                position.x - int(offset.x), position.y - int(offset.y)
+            )
+            screen.blit(surface, final)
+
+    def get_offset(self, tracked_pos: pygame.Vector2) -> None:
+        self.camera = tracked_pos - pygame.Vector2(self.world.screen.get_size()) / 2
 
 
 class InputProcessor(esper.Processor):
@@ -42,7 +56,12 @@ class InputProcessor(esper.Processor):
             for component in (Position, Velocity, Sprite)
         )
         keys = pygame.key.get_pressed()
-        mouse_pos = pygame.Vector2(pygame.mouse.get_pos())
+        mouse_pos = (
+            pygame.Vector2(pygame.mouse.get_pos())
+            + pos
+            + pygame.Vector2(sprite.image.get_size()) / 2
+            - pygame.Vector2(self.world.screen.get_size()) / 2
+        )
 
         if keys[pygame.K_w]:
             dy -= 1
