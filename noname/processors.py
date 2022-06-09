@@ -1,5 +1,3 @@
-import time
-
 import esper
 
 from .components import *
@@ -77,11 +75,6 @@ class CollisionProcessor(esper.Processor):
             new_pos = Position(center_pos + vel)
             cx, cy = new_pos.cx, new_pos.cy
 
-            rect.center = center_pos
-            horizontal_projection = rect.move(vel.x, 0)
-            vertical_projection = rect.move(0, vel.y)
-
-            start = time.perf_counter()
             tiles = [
                 pygame.Rect(cx * TILE_SIZE, cy * TILE_SIZE, TILE_SIZE, TILE_SIZE)
                 for cx, cy in (
@@ -96,6 +89,13 @@ class CollisionProcessor(esper.Processor):
                 )
                 if self.collides(cx, cy)
             ]
+            if not tiles:
+                return
+
+            rect.center = center_pos
+            horizontal_projection = rect.move(vel.x, 0)
+            vertical_projection = rect.move(0, vel.y)
+
             for tile in tiles:
                 if horizontal_projection.colliderect(tile):
                     vel.x = 0
