@@ -78,7 +78,7 @@ class InputProcessor(esper.Processor):
         velocity *= 0.7
 
         center = pos + pygame.Vector2(sprite.image.get_size()) / 2
-        angle = (mouse_pos - center).normalize().angle_to(self.right)
+        angle = ((mouse_pos - center) or pygame.Vector2(0, 0)).normalize().angle_to(self.right)
         sprite.image = pygame.transform.rotate(sprite.original_image, angle)
         pos.x, pos.y = center - pygame.Vector2(sprite.image.get_size()) / 2
 
