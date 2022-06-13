@@ -66,3 +66,9 @@ class FRect:
 
     def __str__(self):
         return f"<{self.__class__.__name__}({self.x, self.y, self.width, self.height})>"
+
+
+class Line:
+    def __init__(self, start=pygame.Vector2(0, 0), end=pygame.Vector2(0, 0)):
+        self.start = start
+        self.end = end
