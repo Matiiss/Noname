@@ -1,3 +1,6 @@
+import math
+
+import dda
 import esper
 
 from .components import *
@@ -28,6 +31,8 @@ class RenderProcessor(esper.Processor):
         self.get_offset(pos + pygame.Vector2(sprite.image.get_size()) / 2)
         self.tiles(screen, self.camera)
         self.sprites(screen, self.camera)
+        # self.draw_lines(screen, self.camera)
+        self.draw_shadow(screen, self.camera)
 
     def sprites(self, screen: pygame.Surface, offset: pygame.Vector2) -> None:
         for entity, (pos, sprite) in self.world.get_components(Position, Sprite):
@@ -43,6 +48,19 @@ class RenderProcessor(esper.Processor):
 
     def get_offset(self, tracked_pos: pygame.Vector2) -> None:
         self.camera = tracked_pos - pygame.Vector2(self.world.screen.get_size()) / 2
+
+    def draw_lines(self, screen: pygame.Surface, offset: pygame.Vector2) -> None:
+        for entity, (line, *_) in self.world.get_components(Line):
+            pygame.draw.line(screen, "white", line.start - offset, line.end - offset)
+
+    def draw_shadow(self, screen: pygame.Surface, offset: pygame.Vector2) -> None:
+        surf = pygame.Surface(screen.get_size())
+        surf.fill("black")
+        surf.set_colorkey("white")
+        surf.set_alpha(100)
+        pygame.draw.polygon(surf, "white", [point - offset for point in points])
+        pygame.draw.circle(surf, "white", points[0] - offset, 15)
+        screen.blit(surf, (0, 0))
 
 
 class InputProcessor(esper.Processor):
@@ -133,9 +151,49 @@ class CollisionProcessor(esper.Processor):
 
 
 class LightingProcessor(esper.Processor):
+    priority = 5
+
     def process(self, events: list, actual_frames: float) -> None:
+        global points
+        points = []
+
         position = self.world.component_for_entity(self.world.player, Position)
-        # hmm
+        sprite = self.world.component_for_entity(self.world.player, Sprite)
+        x, y = position = Position(
+            position + pygame.Vector2(sprite.image.get_size()) / 2
+        )
+        collision_map = self.world.collision_map
+
+        mouse_pos = (
+            pygame.Vector2(pygame.mouse.get_pos())
+            + position
+            + pygame.Vector2(sprite.image.get_size()) / 2
+            - pygame.Vector2(self.world.screen.get_size()) / 2
+        )
+
+        mouse_angle = (
+            ((mouse_pos - position) or pygame.Vector2(1, 0))
+            .normalize()
+            .angle_to(pygame.Vector2(1, 0))
+        )
+        mouse_angle = int(mouse_angle)
+
+        points.append(position)
+
+        # for angle in range(mouse_angle - 45, mouse_angle + 45 + 1, 1):
+        #     point = dda.from_angle(x, y, math.radians(angle), collision_map, TILE_SIZE)
+        #     points.append(pygame.Vector2(point))
+        points.extend(
+            dda.from_angle_range(
+                x,
+                y,
+                math.radians(0),
+                math.radians(361),
+                math.radians(1),
+                collision_map,
+                TILE_SIZE,
+            )
+        )
 
 
 processors = [processor() for processor in esper.Processor.__subclasses__()]
