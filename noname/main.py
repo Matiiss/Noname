@@ -31,6 +31,10 @@ class Game:
 
         self.running = True
 
+        self.world.lines = [
+            self.world.create_entity(Line()) for _ in range(360)
+        ]
+
     def run(self) -> None:
         while self.running:
             self.main()
@@ -67,11 +71,11 @@ class Game:
         path: str,
     ) -> tuple[
         tuple[tuple[pygame.Surface, pygame.Vector2], ...],
-        tuple[tuple[bool, ...], ...],
+        list[list[bool]],
     ]:
         tile_array = load_map(path=path)
         return tuple(
             (data["tile"], pygame.Vector2(col * TILE_SIZE, row * TILE_SIZE))
             for row, row_data in enumerate(tile_array)
             for col, data in enumerate(row_data)
-        ), tuple(tuple(data["collision"] for data in row) for row in tile_array)
+        ), list(list(data["collision"] for data in row) for row in tile_array)
