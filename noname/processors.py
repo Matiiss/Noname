@@ -143,11 +143,12 @@ class CollisionProcessor(esper.Processor):
                 if vertical_projection.colliderect(tile):
                     vel.y = 0
 
+    # @functools.lru_cache(maxsize=512)
     def collides(self, cx: int, cy: int) -> bool:
-        try:
-            return self.world.collision_map[cy][cx]
-        except IndexError:
-            return True
+        map_ = self.world.collision_map
+        if 0 <= cy < len(map_) and 0 <= cx < len(map_[0]):
+            return map_[cy][cx]
+        return True
 
 
 class LightingProcessor(esper.Processor):
@@ -176,20 +177,17 @@ class LightingProcessor(esper.Processor):
             .normalize()
             .angle_to(pygame.Vector2(1, 0))
         )
-        mouse_angle = int(mouse_angle)
 
         points.append(position)
+        start, stop, step = math.radians(mouse_angle - 45), math.radians(mouse_angle + 45), math.radians(0.5)
 
-        # for angle in range(mouse_angle - 45, mouse_angle + 45 + 1, 1):
-        #     point = dda.from_angle(x, y, math.radians(angle), collision_map, TILE_SIZE)
-        #     points.append(pygame.Vector2(point))
         points.extend(
             dda.from_angle_range(
                 x,
                 y,
-                math.radians(0),
-                math.radians(361),
-                math.radians(1),
+                start,
+                stop,
+                step,
                 collision_map,
                 TILE_SIZE,
             )
