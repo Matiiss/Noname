@@ -40,18 +40,17 @@ class RenderProcessor(esper.Processor):
 
     def sprites(self, screen: pygame.Surface, offset: pygame.Vector2) -> None:
         for entity, (pos, sprite) in self.world.get_components(Position, Sprite):
-            final = pygame.Vector2(int(pos.x - offset.x), int(pos.y - offset.y))
+            final = pos + offset
             screen.blit(sprite.image, final)
 
     def tiles(self, screen: pygame.Surface, offset: pygame.Vector2) -> None:
         for surface, position in self.world.map:
-            final = pygame.Vector2(
-                position.x - int(offset.x), position.y - int(offset.y)
-            )
+            final = position + offset
             screen.blit(surface, final)
 
     def get_offset(self, tracked_pos: pygame.Vector2) -> None:
-        self.camera = tracked_pos - pygame.Vector2(self.world.screen.get_size()) / 2
+        camera = pygame.Vector2((WIDTH, HEIGHT)) / 2 - tracked_pos
+        self.camera = pygame.Vector2(round(camera.x), round(camera.y))
 
     def draw_lines(self, screen: pygame.Surface, offset: pygame.Vector2) -> None:
         for entity, (line, *_) in self.world.get_components(Line):
@@ -60,8 +59,8 @@ class RenderProcessor(esper.Processor):
     def draw_shadow(self, screen: pygame.Surface, offset: pygame.Vector2) -> None:
         surf = self.shadow_surface
         surf.fill("black")
-        pygame.draw.polygon(surf, "white", [point - offset for point in points])
-        pygame.draw.circle(surf, "white", points[0] - offset, 15)
+        pygame.draw.polygon(surf, "white", [point + offset for point in points])
+        pygame.draw.circle(surf, "white", points[0] + offset, 15)
         screen.blit(surf, (0, 0))
 
 
