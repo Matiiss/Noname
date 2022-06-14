@@ -22,7 +22,7 @@ class RenderProcessor(esper.Processor):
 
     camera = pygame.Vector2(0, 0)
 
-    shadow_surface = pygame.Surface(WIDTH, HEIGHT)
+    shadow_surface = pygame.Surface((WIDTH, HEIGHT))
     shadow_surface.set_colorkey("white")
     shadow_surface.set_alpha(100)
 
