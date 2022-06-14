@@ -179,7 +179,11 @@ class LightingProcessor(esper.Processor):
         )
 
         points.append(position)
-        start, stop, step = math.radians(mouse_angle - 45), math.radians(mouse_angle + 45), math.radians(0.5)
+        start, stop, step = (
+            math.radians(mouse_angle - 45),
+            math.radians(mouse_angle + 45),
+            math.radians(0.5),
+        )
 
         points.extend(
             dda.from_angle_range(
