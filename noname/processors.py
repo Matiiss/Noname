@@ -96,6 +96,7 @@ class InputProcessor(esper.Processor):
         velocity *= 0.7
 
         center = pos + pygame.Vector2(sprite.image.get_size()) / 2
+        global angle
         angle = (
             ((mouse_pos - center) or pygame.Vector2(1, 0))
             .normalize()
@@ -165,23 +166,10 @@ class LightingProcessor(esper.Processor):
         )
         collision_map = self.world.collision_map
 
-        mouse_pos = (
-            pygame.Vector2(pygame.mouse.get_pos())
-            + position
-            + pygame.Vector2(sprite.image.get_size()) / 2
-            - pygame.Vector2(self.world.screen.get_size()) / 2
-        )
-
-        mouse_angle = (
-            ((mouse_pos - position) or pygame.Vector2(1, 0))
-            .normalize()
-            .angle_to(pygame.Vector2(1, 0))
-        )
-
         points.append(position)
         start, stop, step = (
-            math.radians(mouse_angle - 45),
-            math.radians(mouse_angle + 45),
+            math.radians(angle - 45),
+            math.radians(angle + 45),
             math.radians(0.5),
         )
 
