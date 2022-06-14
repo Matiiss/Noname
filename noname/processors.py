@@ -22,6 +22,10 @@ class RenderProcessor(esper.Processor):
 
     camera = pygame.Vector2(0, 0)
 
+    shadow_surface = pygame.Surface(WIDTH, HEIGHT)
+    shadow_surface.set_colorkey("white")
+    shadow_surface.set_alpha(100)
+
     def process(self, events: list, actual_frames: float) -> None:
         screen = self.world.screen
         pos, sprite = [
@@ -54,10 +58,8 @@ class RenderProcessor(esper.Processor):
             pygame.draw.line(screen, "white", line.start - offset, line.end - offset)
 
     def draw_shadow(self, screen: pygame.Surface, offset: pygame.Vector2) -> None:
-        surf = pygame.Surface(screen.get_size())
+        surf = self.shadow_surface
         surf.fill("black")
-        surf.set_colorkey("white")
-        surf.set_alpha(100)
         pygame.draw.polygon(surf, "white", [point - offset for point in points])
         pygame.draw.circle(surf, "white", points[0] - offset, 15)
         screen.blit(surf, (0, 0))
