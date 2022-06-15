@@ -31,9 +31,12 @@ class Game:
 
         self.running = True
 
-        self.world.lines = [
-            self.world.create_entity(Line()) for _ in range(360)
-        ]
+        # self.world.lines = [self.world.create_entity(Line()) for _ in range(360)]
+
+        green_square = pygame.Surface((50, 50))
+        green_square.fill("green")
+        for _ in range(10):
+            self.world.create_entity(Position(0, 0), Sprite(green_square))
 
     def run(self) -> None:
         while self.running:
@@ -69,10 +72,7 @@ class Game:
     @staticmethod
     def load_tiles(
         path: str,
-    ) -> tuple[
-        tuple[tuple[pygame.Surface, pygame.Vector2], ...],
-        list[list[bool]],
-    ]:
+    ) -> tuple[tuple[tuple[pygame.Surface, pygame.Vector2], ...], list[list[bool]],]:
         tile_array = load_map(path=path)
         return tuple(
             (data["tile"], pygame.Vector2(col * TILE_SIZE, row * TILE_SIZE))
