@@ -114,7 +114,7 @@ static PyObject *method_from_angle(PyObject *self, PyObject *args) {
 	
 	free(collision_array);
 	
-	return Py_BuildValue("dd", end_point.x, end_point.y);
+	return Py_BuildValue("ii", round(end_point.x), round(end_point.y));
 }
 
 
@@ -148,8 +148,8 @@ static PyObject *method_from_angle_range(PyObject *self, PyObject *args) {
 	for (int i = 0; i < length; i++) {
 		PyObject *point = PyList_New(2);
 		struct Vector2 end_point = from_angle(angle, start_position, width, height, collision_array, tile_size);
-		PyList_SetItem(point, 0, PyFloat_FromDouble(end_point.x));
-		PyList_SetItem(point, 1, PyFloat_FromDouble(end_point.y));
+		PyList_SetItem(point, 0, PyLong_FromLong(round(end_point.x)));
+		PyList_SetItem(point, 1, PyLong_FromLong(round(end_point.y)));
 		angle += step;
 		PyList_SetItem(py_list, i, PyList_AsTuple(point));
 		Py_DECREF(point);
