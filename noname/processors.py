@@ -23,10 +23,7 @@ class RenderProcessor(esper.Processor):
     camera = pygame.Vector2(0, 0)
 
     shadow_surface = pygame.Surface((WIDTH, HEIGHT), flags=pygame.SRCALPHA)
-    # shadow_surface.set_colorkey("white")
-    # shadow_surface.set_alpha(100)
-
-    shadow_hider = pygame.Surface((WIDTH, HEIGHT), flags=pygame.SRCALPHA)
+    shadow_surface.set_colorkey("white")
 
     def process(self, events: list, actual_frames: float) -> None:
         screen = self.world.screen
@@ -36,20 +33,19 @@ class RenderProcessor(esper.Processor):
         ]
         self.get_offset(pos + pygame.Vector2(sprite.image.get_size()) / 2)
         self.tiles(screen, self.camera)
+        self.draw_shadow(self.camera)
         self.sprites(screen, self.camera)
-        self.draw_shadow(screen, self.camera)
-
-        # self.draw_lines(screen, self.camera)
 
     def sprites(self, screen: pygame.Surface, offset: pygame.Vector2) -> None:
-        # surf = self.shadow_hider
+        # TODO: fix blending with other entities when being on them
+
+        surf = self.shadow_surface
 
         for entity, (pos, sprite) in self.world.get_components(Position, Sprite):
             final = pos + offset
-            screen.blit(sprite.image, final)
+            surf.blit(sprite.image, final, special_flags=pygame.BLEND_RGBA_MIN)
 
-        # screen.blit(surf, (0, 0), special_flags=pygame.BLEND_MAX)
-        # print(screen.get_at((0, 0)))
+        screen.blit(surf, (0, 0))
 
     def tiles(self, screen: pygame.Surface, offset: pygame.Vector2) -> None:
         for surface, position in self.world.map:
@@ -64,16 +60,11 @@ class RenderProcessor(esper.Processor):
         for entity, (line, *_) in self.world.get_components(Line):
             pygame.draw.line(screen, "white", line.start - offset, line.end - offset)
 
-    def draw_shadow(self, screen: pygame.Surface, offset: pygame.Vector2) -> None:
-        self.shadow_surface.fill((0, 0, 0, 70))
-        self.shadow_hider.fill((0, 0, 0, 0))
-        for surf in (self.shadow_surface, self.shadow_hider):
-            # surf.fill((0, 0, 0, 70))
-            pygame.draw.polygon(
-                surf, (255, 255, 255, 0), [point + offset for point in points]
-            )
-            pygame.draw.circle(surf, (255, 255, 255, 0), points[0] + offset, 15)
-        screen.blit(self.shadow_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+    def draw_shadow(self, offset: pygame.Vector2) -> None:
+        surf = self.shadow_surface
+        surf.fill((0, 0, 0, 70))
+        pygame.draw.polygon(surf, "white", [point + offset for point in points])
+        pygame.draw.circle(surf, "white", points[0] + offset, 15)
 
 
 class InputProcessor(esper.Processor):
