@@ -6,7 +6,7 @@ WIDTH, HEIGHT = 320, 180
 DISPLAY_FLAGS = pygame.SCALED
 
 # time settings
-FPS = 0
+FPS = 60
 FRAME_CONSTANT = 60
 
 # tile settings
