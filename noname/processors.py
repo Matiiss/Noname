@@ -65,6 +65,8 @@ class RenderProcessor(esper.Processor):
         surf.fill((0, 0, 0, 70))
         pygame.draw.polygon(surf, "white", [point + offset for point in points])
         pygame.draw.circle(surf, "white", points[0] + offset, 15)
+        # pygame.draw.aaline(surf, "white", points[0] + offset, points[1] + offset, blend=True)
+        # pygame.draw.aaline(surf, "white", points[0] + offset, points[-1] + offset, blend=True)
 
 
 class InputProcessor(esper.Processor):
