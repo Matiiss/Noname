@@ -1,9 +1,5 @@
-import esper
-
-from .components import *
 from .enums import GameState
-from .processors import processors
-from .settings import *
+from .processors import *
 from .utils.assets import load_map, load_sprites
 
 
@@ -35,8 +31,8 @@ class Game:
 
         green_square = pygame.Surface((50, 50))
         green_square.fill("green")
-        for _ in range(10):
-            self.world.create_entity(Position(0, 0), Sprite(green_square))
+        for i in range(100):
+            self.world.create_entity(Position(i * 70, 0), Sprite(green_square))
 
     def run(self) -> None:
         while self.running:
