@@ -1,9 +1,8 @@
-import math
-
 import dda
 import esper
 
 from .components import *
+from .settings import *
 
 
 class MovementProcessor(esper.Processor):
@@ -54,7 +53,9 @@ class RenderProcessor(esper.Processor):
 
     def get_offset(self, tracked_pos: pygame.Vector2) -> None:
         camera = pygame.Vector2((WIDTH, HEIGHT)) / 2 - tracked_pos
-        self.camera = pygame.Vector2(round(camera.x), round(camera.y))
+        x, y = round(camera.x), round(camera.y)
+        self.camera.x = min(0, max(x, -MAP_WIDTH * TILE_SIZE + WIDTH))
+        self.camera.y = min(0, max(y, -MAP_HEIGHT * TILE_SIZE + HEIGHT))
 
     def draw_lines(self, screen: pygame.Surface, offset: pygame.Vector2) -> None:
         for entity, (line, *_) in self.world.get_components(Line):
@@ -63,15 +64,23 @@ class RenderProcessor(esper.Processor):
     def draw_shadow(self, offset: pygame.Vector2) -> None:
         surf = self.shadow_surface
         surf.fill((0, 0, 0, 70))
-        pygame.draw.polygon(surf, "white", [point + offset for point in points])
-        pygame.draw.circle(surf, "white", points[0] + offset, 15)
-        # pygame.draw.aaline(surf, "white", points[0] + offset, points[1] + offset, blend=True)
-        # pygame.draw.aaline(surf, "white", points[0] + offset, points[-1] + offset, blend=True)
+        pygame.draw.polygon(
+            surf,
+            "white",
+            [point + offset for point in LightingProcessor.shadow_polygon_points],
+        )
+        pygame.draw.circle(
+            surf, "white", LightingProcessor.shadow_polygon_points[0] + offset, 15
+        )
+        # pygame.draw.aaline(surf, "white", shadow_polygon_points[0] + offset, shadow_polygon_points[1] + offset, blend=True)
+        # pygame.draw.aaline(surf, "white", shadow_polygon_points[0] + offset, shadow_polygon_points[-1] + offset, blend=True)
 
 
 class InputProcessor(esper.Processor):
-    right = pygame.Vector2(1, 0)
     priority = 15
+
+    angle_to_mouse: float = 0
+    right = pygame.Vector2(1, 0)
 
     def process(self, events: list, actual_frames: float) -> None:
         dx, dy = 0, 0
@@ -80,12 +89,7 @@ class InputProcessor(esper.Processor):
             for component in (Position, Velocity, Sprite)
         )
         keys = pygame.key.get_pressed()
-        mouse_pos = (
-            pygame.Vector2(pygame.mouse.get_pos())
-            + pos
-            + pygame.Vector2(sprite.image.get_size()) / 2
-            - pygame.Vector2(self.world.screen.get_size()) / 2
-        )
+        mouse_pos = pygame.Vector2(pygame.mouse.get_pos()) - RenderProcessor.camera
 
         if keys[pygame.K_w]:
             dy -= 1
@@ -102,13 +106,15 @@ class InputProcessor(esper.Processor):
         velocity *= 0.7
 
         center = pos + pygame.Vector2(sprite.image.get_size()) / 2
-        global angle
-        angle = (
+
+        self.__class__.angle_to_mouse = (
             ((mouse_pos - center) or pygame.Vector2(1, 0))
             .normalize()
             .angle_to(self.right)
         )
-        sprite.image = pygame.transform.rotate(sprite.original_image, angle)
+        sprite.image = pygame.transform.rotate(
+            sprite.original_image, self.angle_to_mouse
+        )
         pos.x, pos.y = center - pygame.Vector2(sprite.image.get_size()) / 2
 
 
@@ -161,10 +167,9 @@ class CollisionProcessor(esper.Processor):
 class LightingProcessor(esper.Processor):
     priority = 5
 
-    def process(self, events: list, actual_frames: float) -> None:
-        global points
-        points = []
+    shadow_polygon_points = []
 
+    def process(self, events: list, actual_frames: float) -> None:
         position = self.world.component_for_entity(self.world.player, Position)
         sprite = self.world.component_for_entity(self.world.player, Sprite)
         x, y = position = Position(
@@ -172,20 +177,23 @@ class LightingProcessor(esper.Processor):
         )
         collision_map = self.world.collision_map
 
-        points.append(position)
+        self.shadow_polygon_points.clear()
+        self.shadow_polygon_points.append(tuple(position))
+
         start, stop, step = (
-            math.radians(angle - 45),
-            math.radians(angle + 45),
+            math.radians(InputProcessor.angle_to_mouse - 45),
+            math.radians(InputProcessor.angle_to_mouse + 45),
             math.radians(0.5),
         )
 
-        points.extend(
+        self.shadow_polygon_points.extend(
             dda.from_angle_range(
                 x,
                 y,
                 start,
                 stop,
                 step,
+                MAX_RAY_DISTANCE,
                 collision_map,
                 TILE_SIZE,
             )
