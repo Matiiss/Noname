@@ -16,7 +16,7 @@ struct Vector2 {
 //}
 
 
-struct Vector2 from_angle(double angle, struct Vector2 position, int width, int height, int *collision_map, int tile_size) {
+struct Vector2 from_angle(double angle, struct Vector2 position, float max_distance, int width, int height, int *collision_map, int tile_size) {
 	struct Vector2 direction = {cos(angle), -sin(angle)};
 	double x_component = 0, y_component = 0;
 	
@@ -49,7 +49,6 @@ struct Vector2 from_angle(double angle, struct Vector2 position, int width, int 
 	
 	
 	int tile_found = 0;
-	float max_distance = 185;
 	float distance = 0;
 	int failsafe_counter = 0;
 	
@@ -64,7 +63,7 @@ struct Vector2 from_angle(double angle, struct Vector2 position, int width, int 
 			ray_length.y += step_size.y;
 		};
 		if (tile.x >= 0 && tile.x < width * tile_size && tile.y >= 0 && tile.y < height * tile_size) {
-			tile_found = collision_map[(int)(tile.y / tile_size) * height + (int)(tile.x / tile_size)];
+			tile_found = collision_map[(int)(tile.y / tile_size) * width + (int)(tile.x / tile_size)];
 		};
 		
 		failsafe_counter++;
@@ -83,9 +82,10 @@ struct Vector2 from_angle(double angle, struct Vector2 position, int width, int 
 static PyObject *method_from_angle(PyObject *self, PyObject *args) {
 	double angle, x, y;
 	int tile_size;
+	float max_distance;
 	PyObject *collision_map;
 	
-	if(!PyArg_ParseTuple(args, "dddOi", &x, &y, &angle, &collision_map, &tile_size)) {
+	if(!PyArg_ParseTuple(args, "dddfOi", &x, &y, &angle, &max_distance, &collision_map, &tile_size)) {
         return NULL;
     };
 	
@@ -106,6 +106,7 @@ static PyObject *method_from_angle(PyObject *self, PyObject *args) {
 	struct Vector2 end_point = from_angle(
 		angle, 
 		start_position, 
+		max_distance,
 		width, 
 		height, 
 		collision_array, 
@@ -121,9 +122,10 @@ static PyObject *method_from_angle(PyObject *self, PyObject *args) {
 static PyObject *method_from_angle_range(PyObject *self, PyObject *args) {
 	double x, y, start, stop, step;
 	int tile_size;
+	float max_distance;
 	PyObject *collision_map;
 	
-	if(!PyArg_ParseTuple(args, "dddddOi", &x, &y, &start, &stop, &step, &collision_map, &tile_size)) {
+	if(!PyArg_ParseTuple(args, "dddddfOi", &x, &y, &start, &stop, &step, &max_distance, &collision_map, &tile_size)) {
         return NULL;
     };
 	
@@ -147,7 +149,7 @@ static PyObject *method_from_angle_range(PyObject *self, PyObject *args) {
 	double angle = start;
 	for (int i = 0; i < length; i++) {
 		PyObject *point = PyList_New(2);
-		struct Vector2 end_point = from_angle(angle, start_position, width, height, collision_array, tile_size);
+		struct Vector2 end_point = from_angle(angle, start_position, max_distance, width, height, collision_array, tile_size);
 		PyList_SetItem(point, 0, PyLong_FromLong(round(end_point.x)));
 		PyList_SetItem(point, 1, PyLong_FromLong(round(end_point.y)));
 		angle += step;
@@ -195,7 +197,7 @@ int main() {
 	};
 	
 	struct Vector2 position = {16, 48};
-	struct Vector2 value = from_angle(3.14 / 4, position, 4, 4, *map, 16);
+	struct Vector2 value = from_angle(3.14 / 4, position, 185, 4, 4, *map, 16);
 	printf("%f %f", value.x, value.y);
 	
 	return 0;
