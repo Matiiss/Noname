@@ -27,7 +27,7 @@ def load_map(
     """Returns an iterator that yields a tuple of tile data and its position."""
 
     if mapping is None:
-        tiles = load_sprites("assets/images/tiles/spritesheet.png", size=32, convert_alpha=True)
+        tiles = load_sprites("assets/images/tiles/spritesheet.png", size=16, convert_alpha=True)
         mapping = {
             ".": {"tile": tiles[0], "collision": False},
             "x": {"tile": tiles[1], "collision": True},
